@@ -1,0 +1,28 @@
+{
+  "name": "digital-certificate-excel-mapping-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikeHunt1234/digital-certificate-excel-mapping-tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MikeHunt1234/digital-certificate-excel-mapping-tool/issues"
+  },
+  "homepage": "https://github.com/MikeHunt1234/digital-certificate-excel-mapping-tool#readme",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "xlsx": "^0.18.5"
+  }
+}
