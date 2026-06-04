@@ -15,10 +15,10 @@ const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Import routes
-const mappingRoutes = require('./src/routes/mappingRoutes');
+const api = require('./src/routes/api');
 
 // Use routes
-app.use('/api', mappingRoutes);
+app.use('/api', api);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

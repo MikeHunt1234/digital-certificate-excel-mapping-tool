@@ -3,53 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Mapping Tool</title>
+    <title>Digital Certificate Data Mapping Tool</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>🔄 Data Mapping Tool</h1>
-        <p class="subtitle">Upload your data file - it will be formatted according to the template</p>
+        <p class="subtitle">Upload certificate data file(s) - they will be formatted according to the template</p>
         
-        <!-- Upload Section -->
+        <!-- Single Upload Area that accepts multiple files -->
         <div class="step">
-            <h3>Upload Your Data File</h3>
-            <p class="step-description">Excel file containing certificate data</p>
+            <h3>Upload Your Data File(s)</h3>
+            <p class="step-description">Excel files containing certificate data (can select multiple files)</p>
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📊</div>
-                <p>Drop Excel file here or click to select</p>
-                <p class="small-text">.xlsx, .xls supported</p>
-                <input type="file" id="fileInput" accept=".xlsx,.xls">
+                <p>Drop Excel file(s) here or click to select</p>
+                <p class="small-text">.xlsx, .xls supported | Multiple files can be selected</p>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" multiple>
             </div>
-        </div>
-
-        <!-- Preview Section -->
-        <div id="previewSection" class="preview-section hidden">
-            <h3>📋 Data Preview</h3>
-            <div id="previewContent"></div>
-            <button id="processBtn" class="btn-primary">🔄 Process & Export</button>
         </div>
 
         <!-- Status Bar -->
         <div id="statusBar" class="status-bar">
             <div class="status-item">
-                <span class="status-label">Template:</span>
-                <span class="status-value">template.xlsx</span>
+                <span class="status-label">Data Files:</span>
+                <span id="fileCount" class="status-value">0 selected</span>
             </div>
             <div class="status-item">
-                <span class="status-label">Data File:</span>
-                <span id="fileName" class="status-value">Not loaded</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Records:</span>
+                <span class="status-label">Total Records:</span>
                 <span id="recordCount" class="status-value">0</span>
             </div>
+        </div>
+
+        <!-- Process Button -->
+        <div id="processSection">
+            <button id="processBtn" class="btn-primary" disabled>🔄 Process & Export</button>
         </div>
 
         <!-- Loading State -->
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
-            <p>Processing...</p>
+            <p>Processing files...</p>
         </div>
 
         <!-- Error Message -->
@@ -57,6 +51,12 @@
         
         <!-- Success Message -->
         <div id="success" class="success hidden"></div>
+        
+        <!-- Preview Section -->
+        <div id="previewSection" class="preview-section hidden">
+            <h3>📊 Files Summary</h3>
+            <div id="previewContent"></div>
+        </div>
     </div>
 
     <script src="index.js"></script>
