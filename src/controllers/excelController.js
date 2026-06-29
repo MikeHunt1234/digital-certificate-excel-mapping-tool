@@ -110,7 +110,20 @@ async function mergeMultipleFiles(req, res) {
             row.getCell(10).value = record.gioiTinh || '';
             row.getCell(11).value = record.danToc || '';
             row.getCell(13).value = record.noiSinh || '';
-            row.getCell(16).value = record.ketQuaThi || '';
+            
+            // Convert ketQuaThi to decimal with 1 decimal place
+            // Set ketQuaThi with number format
+            const rawKetQua = record.ketQuaThi;
+            const cell16 = row.getCell(16);
+
+            if (rawKetQua && !isNaN(parseFloat(rawKetQua))) {
+                const numValue = parseFloat(rawKetQua);
+                cell16.value = numValue;
+                cell16.numFmt = '0.0';  // This forces Excel to show 1 decimal place
+            } else {
+                cell16.value = rawKetQua || '';
+            }
+            
             row.getCell(17).value = record.hoiDongThi || '';
             row.getCell(18).value = record.diaDanh || '';
             row.getCell(19).value = record['Ngày cấp (file)'] || '';
