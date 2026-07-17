@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (document.getElementById('legacyContentPlaceholder').innerHTML === '') {
             document.getElementById('legacyContentPlaceholder').innerHTML = `
                 <div class="step">
-                    <h3>📜 Legacy Mode (2015 Data)</h3>
+                    <h3>📜 Legacy Mode </h3>
                     <p class="step-description">Upload multiple 2015 Excel files - they will be merged into one</p>
                     
                     <div class="legacy-override-form">
