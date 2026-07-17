@@ -11,6 +11,10 @@ const { mapToTemplate } = require('../services/templateMapper');
  * Process multiple user files and merge into one Excel
  * Uses the modern template mapping
  */
+/**
+ * Process multiple user files and merge into one Excel
+ * Uses the modern template mapping
+ */
 async function mergeMultipleFiles(req, res) {
     try {
         if (!req.files || req.files.length === 0) {
@@ -24,6 +28,7 @@ async function mergeMultipleFiles(req, res) {
         // Collect all records from all files
         let allRecords = [];
         let currentSTT = 1;
+        let firstFileName = '';
         
         console.log(`Processing ${req.files.length} file(s)...`);
         
@@ -32,6 +37,11 @@ async function mergeMultipleFiles(req, res) {
             const uploadedFile = req.files[fileIndex];
             const filePath = uploadedFile.path;
             const fileName = uploadedFile.originalname;
+            
+            // Store first file name for export naming
+            if (!firstFileName) {
+                firstFileName = path.parse(fileName).name;
+            }
             
             console.log(`Processing file ${fileIndex + 1}/${req.files.length}: ${fileName}`);
             
@@ -45,13 +55,11 @@ async function mergeMultipleFiles(req, res) {
             
             // Add STT and source info
             userData.forEach(record => {
-                // Preserve all fields from the parser
-                const newRecord = {
+                allRecords.push({
                     ...record,
                     STT: currentSTT++,
                     'Nguồn file': fileName
-                };
-                allRecords.push(newRecord);
+                });
             });
         }
         
@@ -73,8 +81,13 @@ async function mergeMultipleFiles(req, res) {
             fs.unlink(file.path, () => {});
         });
         
-        // Send file
-        res.download(outputPath, 'merged_certificates.xlsx', (err) => {
+        // ============ GENERATE DYNAMIC FILENAME ============
+        // Format: Import_{original_filename}_{record_count}CC
+        const baseName = firstFileName || 'certificates';
+        const exportFileName = `Import_${baseName}_${allRecords.length}CC.xlsx`;
+        
+        // Send file with dynamic name
+        res.download(outputPath, exportFileName, (err) => {
             if (err) console.error('Error sending file:', err);
             setTimeout(() => {
                 if (fs.existsSync(outputPath)) fs.unlink(outputPath, () => {});
