@@ -103,18 +103,29 @@ processBtn.addEventListener('click', async () => {
             throw new Error(error.error || 'Processing failed');
         }
         
+        // Get filename from server
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'merged_certificates.xlsx'; // fallback
+
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (match && match[1]) {
+                filename = match[1].replace(/['"]/g, '');
+                try {
+                    filename = decodeURIComponent(filename);
+                } catch (e) {}
+            }
+        }
+
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'danh_sach_chung_chi_so.xlsx';
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
-        showSuccess('All files merged successfully!');
-        
     } catch (error) {
         showError(error.message);
     } finally {

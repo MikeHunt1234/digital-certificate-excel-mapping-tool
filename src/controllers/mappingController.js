@@ -56,37 +56,44 @@ async function processMapping(req, res) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
         
-        // Extract user data
-        const userData = extractUserData(req.file.path);
+        const { extractUserData } = require('../services/userDataParser');
+        const { mapToTemplate } = require('../services/templateMapper');
+        const fs = require('fs');
+        const path = require('path');
+        
+        const filePath = req.file.path;
+        const fileName = req.file.originalname;
+        const baseName = path.parse(fileName).name;
+        
+        const userData = extractUserData(filePath);
         
         if (userData.length === 0) {
-            return res.status(400).json({ error: 'No data found in uploaded file' });
+            return res.status(400).json({ error: 'No valid records found in file' });
         }
         
-        // Template path
+        // Re-number STT
+        userData.forEach((record, index) => {
+            record.STT = index + 1;
+        });
+        
         const templatePath = path.join(__dirname, '../../template/template.xlsx');
-        
-        if (!fs.existsSync(templatePath)) {
-            return res.status(500).json({ error: 'Template file not found. Please ensure template.xlsx is in the /template folder.' });
-        }
-        
-        // Output path
         const outputPath = path.join(__dirname, '../../uploads', `output_${Date.now()}.xlsx`);
         
-        // Map to template
-        const recordCount = await mapToTemplate(userData, templatePath, outputPath);
+        await mapToTemplate(userData, templatePath, outputPath);
+        
+        // Clean up
+        fs.unlink(filePath, () => {});
+        
+        // ============ GENERATE DYNAMIC FILENAME ============
+        const exportFileName = `Import_${baseName}_${userData.length}CC.xlsx`;
         
         // Send file
-        res.download(outputPath, 'mapped_data.xlsx', (err) => {
-            if (err) console.error('Download error:', err);
-            // Clean up output file after download
+        res.download(outputPath, exportFileName, (err) => {
+            if (err) console.error('Error sending file:', err);
             setTimeout(() => {
                 if (fs.existsSync(outputPath)) fs.unlink(outputPath, () => {});
             }, 5000);
         });
-        
-        // Clean up uploaded file
-        fs.unlink(req.file.path, () => {});
         
     } catch (error) {
         console.error('Process error:', error);
