@@ -9,12 +9,13 @@
 <body>
     <div class="container">
         <h1>🔄 Digital Certificate Data Mapping Tool</h1>
-        <p class="subtitle">Upload your certficate data file(s) - they will be formatted according to the template</p>
+        <p class="subtitle">Upload your certificate data file(s) - they will be formatted according to the template</p>
         
         <!-- Mode Toggle -->
         <div class="mode-toggle">
             <button id="modernModeBtn" class="mode-btn active">📄 Modern Mode</button>
             <button id="legacyModeBtn" class="mode-btn">📜 Legacy Mode</button>
+            <button id="enrichModeBtn" class="mode-btn">🔗 Enrich Mode</button> <!-- NEW -->
         </div>
         
         <!-- Modern Mode Content -->
@@ -53,8 +54,12 @@
         
         <!-- Legacy Mode Content -->
         <div id="legacyContent" class="mode-content" style="display:none;">
-            <!-- This will be loaded from legacy.html or included here -->
             <div id="legacyContentPlaceholder"></div>
+        </div>
+
+        <!-- Enrich Mode Content - NEW -->
+        <div id="enrichContent" class="mode-content" style="display:none;">
+            <div id="enrichContentPlaceholder"></div>
         </div>
 
         <!-- Loading State -->
@@ -78,5 +83,6 @@
 
     <script src="js/index.js"></script>
     <script src="js/legacy.js"></script>
+    <script src="js/enrich.js"></script> <!-- NEW -->
 </body>
 </html>
