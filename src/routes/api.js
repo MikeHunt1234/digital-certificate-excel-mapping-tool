@@ -8,6 +8,7 @@ const fs = require('fs');
 const { upload, previewUserFile, processMapping } = require('../controllers/mappingController');
 const { mergeMultipleFiles } = require('../controllers/excelController');
 const { previewLegacyFile, processLegacyFiles } = require('../controllers/legacyController');
+const { processEnrichment } = require('../controllers/enrichController');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -48,5 +49,11 @@ router.post('/legacy/preview', uploadMiddleware.single('userFile'), previewLegac
 
 // Process multiple legacy files with overrides
 router.post('/legacy/process', uploadMiddleware.array('userFiles'), processLegacyFiles);
+
+// Add this route after your existing routes
+router.post('/enrich', uploadMiddleware.fields([
+    { name: 'targetFile', maxCount: 1 },
+    { name: 'sourceFile', maxCount: 1 }
+]), processEnrichment);
 
 module.exports = router;
