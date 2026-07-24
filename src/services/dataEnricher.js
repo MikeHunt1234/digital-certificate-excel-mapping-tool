@@ -202,9 +202,6 @@ function parseSourceExcel(filePath) {
 /**
  * Parse target Excel file (template-mapped)
  */
-/**
- * Parse target Excel file (template-mapped)
- */
 function parseTargetExcel(filePath) {
     console.log('📂 Parsing target file:', filePath);
     const workbook = XLSX.readFile(filePath);
@@ -449,14 +446,20 @@ function parseTargetExcel(filePath) {
 
 /**
  * Enrich target data with source data
+ * @param {Array} targetRecords - Target records to enrich
+ * @param {Array} sourceRecords - Source records with data
+ * @param {Object} targetColMap - Column mapping for target
+ * @param {Object} sourceColMap - Column mapping for source
+ * @param {Boolean} overwriteExisting - If true, overwrite existing data; if false, only fill empty fields
  */
-function enrichData(targetRecords, sourceRecords, targetColMap, sourceColMap) {
+function enrichData(targetRecords, sourceRecords, targetColMap, sourceColMap, overwriteExisting = false) {
     console.log('🔍 Building lookup map from source data...');
     const lookupMap = buildLookupMap(sourceRecords, sourceColMap);
     
     const usageTracker = new Map();
     let enrichedCount = 0;
     let matchedCount = 0;
+    let overwrittenCount = 0;
     
     // Log sample keys for debugging
     let sampleKeys = [];
@@ -468,6 +471,7 @@ function enrichData(targetRecords, sourceRecords, targetColMap, sourceColMap) {
         } else break;
     }
     console.log('📋 Sample lookup keys:', sampleKeys);
+    console.log(`📋 Overwrite mode: ${overwriteExisting ? 'ON (will overwrite existing data)' : 'OFF (only fill empty fields)'}`);
     
     const enrichedRecords = targetRecords.map((record, index) => {
         const fullName = record.hoTen || '';
@@ -512,116 +516,90 @@ function enrichData(targetRecords, sourceRecords, targetColMap, sourceColMap) {
             }
         }
         
-        // Fill empty fields
+        // Create new record with source data (overwrite or fill)
         const newRecord = { ...record };
-        let fieldsFilled = false;
+        let fieldsChanged = false;
         
-        const currentGender = newRecord.gioiTinh || '';
-        const currentEthnicity = newRecord.danToc || '';
-        const currentBirthplace = newRecord.noiSinh || '';
+        // Check if we should overwrite or just fill empty fields
+        const shouldUpdateGender = overwriteExisting || !record.gioiTinh || record.gioiTinh.trim() === '';
+        const shouldUpdateEthnicity = overwriteExisting || !record.danToc || record.danToc.trim() === '';
+        const shouldUpdateBirthplace = overwriteExisting || !record.noiSinh || record.noiSinh.trim() === '';
         
-        if (!currentGender || currentGender.trim() === '') {
-            newRecord.gioiTinh = matchData.gender || '';
-            fieldsFilled = true;
-            if (index < 3) console.log(`✅ Filled gender: "${matchData.gender}" for "${fullName}"`);
+        // Update gender
+        if (shouldUpdateGender && matchData.gender) {
+            const oldValue = newRecord.gioiTinh || '(empty)';
+            newRecord.gioiTinh = matchData.gender;
+            fieldsChanged = true;
+            if (index < 3) {
+                console.log(`✅ Updated gender: "${oldValue}" -> "${matchData.gender}" for "${fullName}"`);
+            }
         }
         
-        if (!currentEthnicity || currentEthnicity.trim() === '') {
-            newRecord.danToc = matchData.ethnicity || '';
-            fieldsFilled = true;
-            if (index < 3) console.log(`✅ Filled ethnicity: "${matchData.ethnicity}" for "${fullName}"`);
+        // Update ethnicity
+        if (shouldUpdateEthnicity && matchData.ethnicity) {
+            const oldValue = newRecord.danToc || '(empty)';
+            newRecord.danToc = matchData.ethnicity;
+            fieldsChanged = true;
+            if (index < 3) {
+                console.log(`✅ Updated ethnicity: "${oldValue}" -> "${matchData.ethnicity}" for "${fullName}"`);
+            }
         }
         
-        if (!currentBirthplace || currentBirthplace.trim() === '') {
-            newRecord.noiSinh = matchData.birthplace || '';
-            fieldsFilled = true;
-            if (index < 3) console.log(`✅ Filled birthplace: "${matchData.birthplace}" for "${fullName}"`);
+        // Update birthplace
+        if (shouldUpdateBirthplace && matchData.birthplace) {
+            const oldValue = newRecord.noiSinh || '(empty)';
+            newRecord.noiSinh = matchData.birthplace;
+            fieldsChanged = true;
+            if (index < 3) {
+                console.log(`✅ Updated birthplace: "${oldValue}" -> "${matchData.birthplace}" for "${fullName}"`);
+            }
         }
         
-        if (fieldsFilled) {
+        if (fieldsChanged) {
             enrichedCount++;
+            if (overwriteExisting) {
+                overwrittenCount++;
+            }
         } else {
-            if (index < 3) console.log(`ℹ️ Record "${fullName}" already has all fields filled`);
+            if (index < 3) {
+                if (matchData.gender || matchData.ethnicity || matchData.birthplace) {
+                    console.log(`ℹ️ Record "${fullName}" - no fields needed updating (data already present or no source data)`);
+                }
+            }
         }
         
         return newRecord;
     });
     
-    console.log(`✅ Enrichment complete: ${enrichedCount} records enriched out of ${targetRecords.length} total (${matchedCount} matched)`);
+    console.log(`✅ Enrichment complete: ${enrichedCount} records updated out of ${targetRecords.length} total (${matchedCount} matched)`);
+    if (overwriteExisting) {
+        console.log(`✅ ${overwrittenCount} records had existing data overwritten`);
+    }
     
     return {
         enrichedRecords,
         enrichedCount,
         totalRecords: targetRecords.length,
         matchedCount: matchedCount,
-        lookupMapSize: lookupMap.size
-    };
-}
-
-/**
- * Main enrich function
- */
-async function enrichDataFromFiles(targetPath, sourcePath, outputPath) {
-    console.log('📂 Reading target file...');
-    const target = parseTargetExcel(targetPath);
-    console.log(`📄 Target: ${target.totalRecords} records`);
-    
-    console.log('📂 Reading source file...');
-    const source = parseSourceExcel(sourcePath);
-    console.log(`📄 Source: ${source.totalRecords} records`);
-    
-    console.log('🔍 Enriching data...');
-    
-    const targetColMap = {
-        hoTen: 'hoTen',
-        ngaySinh: 'ngaySinh',
-        gioiTinh: 'gioiTinh',
-        danToc: 'danToc',
-        noiSinh: 'noiSinh'
-    };
-    
-    const sourceColMap = {
-        hoTen: 'hoTen',
-        ngaySinh: 'ngaySinh',
-        gioiTinh: 'gioiTinh',
-        danToc: 'danToc',
-        noiSinh: 'noiSinh'
-    };
-    
-    const result = enrichData(
-        target.records,
-        source.records,
-        targetColMap,
-        sourceColMap
-    );
-    
-    console.log(`✅ Enriched ${result.enrichedCount} of ${result.totalRecords} records`);
-    console.log(`✅ Matched ${result.matchedCount} records`);
-    
-    // Rebuild Excel file with enriched data
-    console.log('📝 Writing enriched data to Excel...');
-    await rebuildExcelFile(target, result.enrichedRecords, outputPath);
-    console.log(`✅ File saved to: ${outputPath}`);
-    
-    return {
-        totalRecords: result.totalRecords,
-        enrichedCount: result.enrichedCount,
-        matchedCount: result.matchedCount,
-        sourceRecords: source.totalRecords,
-        outputPath: outputPath
+        overwrittenCount: overwrittenCount,
+        lookupMapSize: lookupMap.size,
+        overwriteMode: overwriteExisting
     };
 }
 
 /**
  * Rebuild Excel file with enriched data
  */
+/**
+ * Rebuild Excel file with enriched data - NOW OVERWRITES EXISTING DATA
+ */
 async function rebuildExcelFile(target, enrichedRecords, outputPath) {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(target.filePath);
     
-    const worksheet = workbook.getWorksheet('Data');
+    const worksheet = workbook.getWorksheet(target.sheetName || 'Data');
     if (!worksheet) {
-        throw new Error('Could not find "Data" worksheet');
+        throw new Error(`Could not find "${target.sheetName || 'Data'}" worksheet`);
     }
     
     // Find the data start row
@@ -686,35 +664,118 @@ async function rebuildExcelFile(target, enrichedRecords, outputPath) {
         
         let rowUpdated = false;
         
+        // OVERWRITE gender - always update with enriched data
         if (gioiTinhCol !== -1) {
             const cell = row.getCell(gioiTinhCol);
-            if (!cell.value || String(cell.value).trim() === '') {
-                cell.value = record.gioiTinh || '';
-                if (record.gioiTinh) rowUpdated = true;
+            const oldValue = cell.value || '(empty)';
+            const newValue = record.gioiTinh || '';
+            // Always update, even if empty (to clear old data)
+            cell.value = newValue;
+            if (oldValue !== newValue) {
+                rowUpdated = true;
+                if (i < 3) {
+                    console.log(`📝 Row ${rowNum}: Gender "${oldValue}" -> "${newValue}"`);
+                }
             }
         }
         
+        // OVERWRITE ethnicity - always update with enriched data
         if (danTocCol !== -1) {
             const cell = row.getCell(danTocCol);
-            if (!cell.value || String(cell.value).trim() === '') {
-                cell.value = record.danToc || '';
-                if (record.danToc) rowUpdated = true;
+            const oldValue = cell.value || '(empty)';
+            const newValue = record.danToc || '';
+            cell.value = newValue;
+            if (oldValue !== newValue) {
+                rowUpdated = true;
+                if (i < 3) {
+                    console.log(`📝 Row ${rowNum}: Ethnicity "${oldValue}" -> "${newValue}"`);
+                }
             }
         }
         
+        // OVERWRITE birthplace - always update with enriched data
         if (noiSinhCol !== -1) {
             const cell = row.getCell(noiSinhCol);
-            if (!cell.value || String(cell.value).trim() === '') {
-                cell.value = record.noiSinh || '';
-                if (record.noiSinh) rowUpdated = true;
+            const oldValue = cell.value || '(empty)';
+            const newValue = record.noiSinh || '';
+            cell.value = newValue;
+            if (oldValue !== newValue) {
+                rowUpdated = true;
+                if (i < 3) {
+                    console.log(`📝 Row ${rowNum}: Birthplace "${oldValue}" -> "${newValue}"`);
+                }
             }
         }
         
         if (rowUpdated) updatedRows++;
     }
     
-    console.log(`✅ Updated ${updatedRows} rows with enriched data`);
+    console.log(`✅ Updated ${updatedRows} rows with enriched data (overwriting existing values)`);
     await workbook.xlsx.writeFile(outputPath);
+}
+
+/**
+ * Main enrich function
+ * @param {string} targetPath - Path to target file
+ * @param {string} sourcePath - Path to source file
+ * @param {string} outputPath - Path for output file
+ * @param {boolean} overwriteExisting - If true, overwrite existing data; if false, only fill empty fields
+ */
+async function enrichDataFromFiles(targetPath, sourcePath, outputPath, overwriteExisting = false) {
+    console.log('📂 Reading target file...');
+    const target = parseTargetExcel(targetPath);
+    console.log(`📄 Target: ${target.totalRecords} records`);
+    
+    console.log('📂 Reading source file...');
+    const source = parseSourceExcel(sourcePath);
+    console.log(`📄 Source: ${source.totalRecords} records`);
+    
+    console.log(`🔍 Enriching data (overwrite mode: ${overwriteExisting})...`);
+    
+    const targetColMap = {
+        hoTen: 'hoTen',
+        ngaySinh: 'ngaySinh',
+        gioiTinh: 'gioiTinh',
+        danToc: 'danToc',
+        noiSinh: 'noiSinh'
+    };
+    
+    const sourceColMap = {
+        hoTen: 'hoTen',
+        ngaySinh: 'ngaySinh',
+        gioiTinh: 'gioiTinh',
+        danToc: 'danToc',
+        noiSinh: 'noiSinh'
+    };
+    
+    const result = enrichData(
+        target.records,
+        source.records,
+        targetColMap,
+        sourceColMap,
+        overwriteExisting
+    );
+    
+    console.log(`✅ Enriched ${result.enrichedCount} of ${result.totalRecords} records`);
+    console.log(`✅ Matched ${result.matchedCount} records`);
+    if (overwriteExisting) {
+        console.log(`✅ Overwritten ${result.overwrittenCount} records`);
+    }
+    
+    // Rebuild Excel file with enriched data
+    console.log('📝 Writing enriched data to Excel...');
+    await rebuildExcelFile(target, result.enrichedRecords, outputPath);
+    console.log(`✅ File saved to: ${outputPath}`);
+    
+    return {
+        totalRecords: result.totalRecords,
+        enrichedCount: result.enrichedCount,
+        matchedCount: result.matchedCount,
+        overwrittenCount: result.overwrittenCount || 0,
+        sourceRecords: source.totalRecords,
+        outputPath: outputPath,
+        overwriteMode: overwriteExisting
+    };
 }
 
 module.exports = {

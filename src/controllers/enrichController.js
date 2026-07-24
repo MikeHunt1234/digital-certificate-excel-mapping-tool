@@ -20,22 +20,23 @@ async function processEnrichment(req, res) {
         console.log(`📄 Source file: ${sourceFile.originalname}`);
         
         // Output path
-        const outputPath = path.join(__dirname, '../../uploads', `${Date.now()}.xlsx`);
+        const outputPath = path.join(__dirname, '../../uploads', `enriched_${Date.now()}.xlsx`);
         
-        // Process enrichment
+        // Process enrichment with overwrite flag
         const result = await enrichDataFromFiles(
             targetFile.path,
             sourceFile.path,
-            outputPath
+            outputPath,
+            true // overwriteExisting = true
         );
         
         // Clean up uploaded files
         fs.unlink(targetFile.path, () => {});
         fs.unlink(sourceFile.path, () => {});
         
-        // Get filename from target file
+        // Use the original target filename (without enriched_ prefix)
         const baseName = path.parse(targetFile.originalname).name;
-        const exportFileName = `enriched_${baseName}_${result.totalRecords}CC.xlsx`;
+        const exportFileName = `${baseName}.xlsx`;
         
         // Send file
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(exportFileName)}"`);
