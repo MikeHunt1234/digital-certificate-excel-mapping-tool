@@ -425,3 +425,107 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============ MULTIPLE FILE LIST STYLES ============ */
+
+.file-list-container {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.file-list-header {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ddd;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    gap: 8px;
+}
+
+.file-list-item:hover {
+    background: #e9ecef;
+}
+
+.file-list-item .file-index {
+    color: #888;
+    font-weight: 500;
+    min-width: 28px;
+}
+
+.file-list-item .file-name {
+    flex: 1;
+    color: #333;
+}
+
+.file-list-item .file-size {
+    color: #888;
+    font-size: 12px;
+}
+
+.file-remove-btn {
+    background: #ffebee;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #c62828;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+.file-remove-btn:hover {
+    background: #ef5350;
+    color: white;
+}
+
+.file-list-actions {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.btn-small {
+    padding: 4px 12px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-danger {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.btn-danger:hover {
+    background: #ef5350;
+    color: white;
+}

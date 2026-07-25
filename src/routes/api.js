@@ -53,7 +53,7 @@ router.post('/legacy/process', uploadMiddleware.array('userFiles'), processLegac
 // Add this route after your existing routes
 router.post('/enrich', uploadMiddleware.fields([
     { name: 'targetFile', maxCount: 1 },
-    { name: 'sourceFile', maxCount: 1 }
+    { name: 'sourceFiles', maxCount: 50 }
 ]), processEnrichment);
 
 module.exports = router;
