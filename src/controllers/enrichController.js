@@ -1,40 +1,60 @@
+// src/controllers/enrichController.js
 const fs = require('fs');
 const path = require('path');
 const { enrichDataFromFiles } = require('../services/dataEnricher');
 
 /**
- * Process enrichment of two Excel files
+ * Process enrichment with multiple source files
  */
 async function processEnrichment(req, res) {
     try {
-        if (!req.files || !req.files.targetFile || !req.files.sourceFile) {
+        if (!req.files || !req.files.targetFile || !req.files.sourceFiles) {
             return res.status(400).json({ 
-                error: 'Both target file and source file are required' 
+                error: 'Both target file and at least one source file are required' 
             });
         }
         
         const targetFile = req.files.targetFile[0];
-        const sourceFile = req.files.sourceFile[0];
+        const sourceFiles = req.files.sourceFiles; // Array of files
         
         console.log(`📄 Target file: ${targetFile.originalname}`);
-        console.log(`📄 Source file: ${sourceFile.originalname}`);
+        console.log(`📄 Source files: ${sourceFiles.length} file(s)`);
+        sourceFiles.forEach((f, i) => {
+            console.log(`   ${i + 1}. ${f.originalname} (${(f.size / 1024).toFixed(1)} KB)`);
+        });
+        
+        // Get user mapping from request body (optional)
+        let userMapping = null;
+        if (req.body.mapping) {
+            try {
+                userMapping = JSON.parse(req.body.mapping);
+            } catch (e) {
+                console.warn('Invalid mapping JSON, using auto-detection');
+            }
+        }
         
         // Output path
         const outputPath = path.join(__dirname, '../../uploads', `enriched_${Date.now()}.xlsx`);
         
-        // Process enrichment with overwrite flag
+        // Get array of source file paths
+        const sourcePaths = sourceFiles.map(f => f.path);
+        
+        // Process enrichment with multiple source files
         const result = await enrichDataFromFiles(
             targetFile.path,
-            sourceFile.path,
+            sourcePaths, // Pass array of source file paths
             outputPath,
-            true // overwriteExisting = true
+            {
+                userMapping: userMapping,
+                overwriteExisting: true
+            }
         );
         
         // Clean up uploaded files
         fs.unlink(targetFile.path, () => {});
-        fs.unlink(sourceFile.path, () => {});
+        sourceFiles.forEach(f => fs.unlink(f.path, () => {}));
         
-        // Use the original target filename (without enriched_ prefix)
+        // Use the original target filename
         const baseName = path.parse(targetFile.originalname).name;
         const exportFileName = `${baseName}.xlsx`;
         
