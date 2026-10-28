@@ -41,6 +41,8 @@ async function mapToTemplate(userData, templatePath, outputPath) {
         3: 'soVaoSo',
         4: 'tenChungChi',
         5: 'hoTen',
+        6: 'soBaoDanh',
+        7: 'soDinhDanh',
         9: 'ngaySinh',
         10: 'gioiTinh',
         11: 'danToc',
