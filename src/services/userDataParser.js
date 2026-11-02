@@ -28,7 +28,7 @@ function extractUserData(filePath) {
         const row = rawData[i];
         if (!row) continue;
         
-        if (row[0] === 'TT' && row[1] === 'Họ và tên người học') {
+        if (row[0] === 'TT' && row[1] === 'SBD') {
             headerRowIndex = i;
             dataStartRow = i + 1;
             console.log(`Found header at row ${i}, data starts at row ${dataStartRow}`);
@@ -106,7 +106,7 @@ function extractUserData(filePath) {
         
         // Convert date from DD.M.YYYY to DD/MM/YYYY
         let ngaySinhValue = '';
-        const rawDate = row[2];
+        const rawDate = row[4];
         if (rawDate) {
             let dateStr = String(rawDate).trim();
             ngaySinhValue = dateStr.replace(/\./g, '/');
@@ -120,17 +120,20 @@ function extractUserData(filePath) {
         
         const userRecord = {
             STT: ttValue,
-            soHieuChungChi: row[7] ? String(row[7]).trim() : '',
-            soVaoSo: row[9] ? String(row[9]).trim() : '',
-            ngaySinh: ngaySinhValue,
-            gioiTinh: row[4] ? String(row[4]).trim() : '',
-            danToc: row[5] ? String(row[5]).trim() : '',
-            noiSinh: row[3] ? String(row[3]).trim() : '',
-            ketQuaThi: row[6] ? String(row[6]).trim() : '',
-            hoTen: row[1] ? String(row[1]).trim() : '',
+            soHieuChungChi: row[10] ? String(row[10]).trim() : '',
+            soVaoSo: row[12] ? String(row[12]).trim() : '',
             tenChungChi: certificateName,
+            hoTen: row[3] ? String(row[3]).trim() : '',
+            soBaoDanh: row[1] ? String(row[1]).trim() : '',
+            soDinhDanh: row[2] ? String(row[2]).trim() : '',
+            ngaySinh: ngaySinhValue,
+            gioiTinh: row[6] ? String(row[6]).trim() : '',
+            danToc: row[7] ? String(row[7]).trim() : '',
+            noiSinh: row[5] ? String(row[5]).trim() : '',
+            ketQuaThi: row[9] ? String(row[9]).trim() : '',
+            
             hoiDongThi: 'Đại học Cần Thơ',
-            diaDanh: 'thành phố Cần Thơ',
+            diaDanh: 'Thành phố Cần Thơ',
             ngayCapBang: ngayCapBang,
             tenCoQuanCapBang: 'Đại học Cần Thơ',
             chucDanhNguoiKy: chucDanhNguoiKy,

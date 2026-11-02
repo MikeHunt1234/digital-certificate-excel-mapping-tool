@@ -41,18 +41,20 @@ async function mapToTemplate(userData, templatePath, outputPath) {
         3: 'soVaoSo',
         4: 'tenChungChi',
         5: 'hoTen',
+        6: 'soBaoDanh',
+        7: 'soDinhDanh',
         9: 'ngaySinh',
         10: 'gioiTinh',
         11: 'danToc',
         13: 'noiSinh',
-        19: 'ketQuaThi',
-        20: 'hoiDongThi',
-        21: 'diaDanh',
-        22: 'ngayCapBang',
-        23: 'tenCoQuanCapBang',
-        24: 'chucDanhNguoiKy',
-        25: 'nguoiKyBang',
-        28: 'trangThaiSoHoa'
+        16: 'ketQuaThi',
+        17: 'hoiDongThi',
+        18: 'diaDanh',
+        19: 'ngayCapBang',
+        20: 'tenCoQuanCapBang',
+        21: 'chucDanhNguoiKy',
+        22: 'nguoiKyBang',
+        25: 'trangThaiSoHoa'
     };
     
     const validGenders = ['Nam', 'Nữ', 'Khác'];
@@ -98,7 +100,7 @@ async function mapToTemplate(userData, templatePath, outputPath) {
                     errorTitle: 'Invalid Gender',
                     error: 'Please select: Nam, Nữ, or Khác'
                 };
-            } else if (colIdx === 19) { // Column S - Kết quả thi các môn
+            } else if (colIdx === 16) { // Column S - Kết quả thi các môn
                 // Format as number with 1 decimal place
                 if (value !== '' && !isNaN(parseFloat(value))) {
                     cell.value = parseFloat(value);
@@ -127,23 +129,20 @@ async function mapToTemplate(userData, templatePath, outputPath) {
     worksheet.getColumn(10).width = 10;
     worksheet.getColumn(11).width = 12;
     worksheet.getColumn(12).width = 15;
-    worksheet.getColumn(13).width = 25;
+    worksheet.getColumn(13).width = 50;
     worksheet.getColumn(14).width = 25;
     worksheet.getColumn(15).width = 15;
-    worksheet.getColumn(16).width = 25;
-    worksheet.getColumn(17).width = 15;
-    worksheet.getColumn(18).width = 15;
+    worksheet.getColumn(16).width = 20;
+    worksheet.getColumn(17).width = 25;
+    worksheet.getColumn(18).width = 25;
     worksheet.getColumn(19).width = 15;
     worksheet.getColumn(20).width = 25;
     worksheet.getColumn(21).width = 25;
-    worksheet.getColumn(22).width = 15;
+    worksheet.getColumn(22).width = 25;
     worksheet.getColumn(23).width = 25;
     worksheet.getColumn(24).width = 20;
     worksheet.getColumn(25).width = 25;
     worksheet.getColumn(26).width = 15;
-    worksheet.getColumn(27).width = 20;
-    worksheet.getColumn(28).width = 25;
-    worksheet.getColumn(29).width = 30;
     
     await workbook.xlsx.writeFile(outputPath);
     
